@@ -9,18 +9,18 @@ export class SqliteCache implements CacheBackend {
   constructor(private readonly path: string = "resk-cache.sqlite") {}
 
   private ensureDb(): { run: (...args: unknown[]) => unknown; query: (...args: unknown[]) => { get: (...args: unknown[]) => Row | null } } {
-    if (this.db) return this.db;
+    if (this.db) return this.db as { run: (...args: unknown[]) => unknown; query: (...args: unknown[]) => { get: (...args: unknown[]) => Row | null } };
     // Bun exposes SQLite via Bun.sqlite
     const sqlite = (Bun as unknown as { sqlite?: { Database: new (path: string) => unknown } | undefined }).sqlite;
     if (!sqlite) throw new Error("SQLite not available in this Bun runtime");
-    const db = new (sqlite.Database as new (path: string) => { run: (...args: unknown[]) => unknown; query: (...args: unknown[]) => { get: (...args: unknown[]) => Row | null } })(this.path);
+    const db: { run: (...args: unknown[]) => unknown; query: (...args: unknown[]) => { get: (...args: unknown[]) => Row | null } } = new (sqlite.Database as new (path: string) => { run: (...args: unknown[]) => unknown; query: (...args: unknown[]) => { get: (...args: unknown[]) => Row | null } })(this.path);
     db.run(
       "CREATE TABLE IF NOT EXISTS kv (key TEXT PRIMARY KEY, value TEXT NOT NULL, expiresAt INTEGER)"
     );
     // Types are not perfect; keep as any internally
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.db = db as any;
-    return this.db;
+    return db;
   }
 
   async get(key: string): Promise<unknown | null> {

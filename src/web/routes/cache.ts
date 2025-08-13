@@ -43,7 +43,7 @@ export const cacheController = {
       (value as Record<string, unknown>).variants &&
       Array.isArray((value as Record<string, unknown>).variants)
     ) {
-      const v = value as { variants: unknown[]; variantStrategy?: string; weights?: number[]; seed?: string };
+      const v = value as { variants: unknown[]; variantStrategy?: import("../../variants/selector").VariantStrategy; weights?: number[]; seed?: string | number | null };
       const { selectVariant } = await import("../../variants/selector");
       const seed = v.seed ?? Bun.env.VARIANT_SEED ?? undefined;
       const rrProvider = async () => {
@@ -61,7 +61,7 @@ export const cacheController = {
       };
       const result = await selectVariant({
         strategy: v.variantStrategy,
-        variants: v.variants,
+        variants: v.variants as unknown as import("../../variants/selector").VariantItem[],
         weights: v.weights,
         seed,
         roundRobinIndexProvider: rrProvider,

@@ -15,9 +15,9 @@
   "scripts": {
     "dev": "bun run --watch src/server.ts",
     "start": "bun run src/server.ts",
-    "build": "tsc -p tsconfig.json",
-    "build:prod": "tsc -p tsconfig.json",
-    "test": "bun test || echo 'Bun not available in this CI; skipping tests'",
+    "build": "rimraf dist && tsc -p tsconfig.json",
+    "build:prod": "rimraf dist && tsc -p tsconfig.json",
+    "test": "bun test tests || echo 'Bun not available in this CI; skipping tests'",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts --max-warnings=0",
     "format": "prettier --write .",
@@ -78,6 +78,7 @@
     "pino-pretty": "^11.2.2",
     "prettier": "^3.6.2",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.39.1"
+    "typescript-eslint": "^8.39.1",
+    "rimraf": "^5.0.5"
   }
 }

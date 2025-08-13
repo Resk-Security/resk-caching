@@ -39,7 +39,7 @@ export const router = {
       const started = performance.now();
       let res: Response | null = null;
       if (path === "/api/cache" && method === "POST") res = await withCorrelation(correlationId, () => cacheController.put(req));
-      else if (path === "/api/cache" && method === "DELETE") res = await withCorrelation(correlationId, () => cacheController.clear(req));
+      else if (path === "/api/cache" && method === "DELETE") res = await withCorrelation(correlationId, () => cacheController.clear());
       else if (path === "/api/cache/query" && method === "POST") res = await withCorrelation(correlationId, () => cacheController.query(req));
       else res = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: { "content-type": "application/json", "x-correlation-id": correlationId } });
 

@@ -1,4 +1,4 @@
-## Resk-Caching (Bun) — Secure caching and vector-friendly backend
+## Resk-Caching — Secure caching and vector-friendly backend
 
 Resk-Caching is a Bun-based backend library/server for secure caching, embeddings orchestration, and vector DB access. It emphasizes security (no secrets in the frontend), performance, and observability.
 
