@@ -21,6 +21,6 @@ coverage/
 .DS_Store
 Thumbs.db
 
-
+README_1.md
 others/
 bun.lock
