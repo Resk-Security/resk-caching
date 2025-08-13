@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+bun.lockb
+
+# build outputs
+dist/
+
+# env
+.env
+.env.local
+
+# logs
+logs/
+*.log
+
+# coverage & build info
+coverage/
+*.tsbuildinfo
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+other/
+bun.lock

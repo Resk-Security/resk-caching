@@ -1,0 +1,75 @@
+name: Node.js Package CI/CD
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['18.x', '20.x']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci || npm i
+      - name: Lint code
+        run: npm run lint
+      - name: Type check with TypeScript
+        run: npx tsc --noEmit
+      - name: Run tests
+        run: npm test
+
+  build-and-publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci || npm i
+      - name: Build
+        run: npm run build:prod
+      - name: Create package
+        run: npm pack
+      - name: Verify package contents
+        run: npm pack --dry-run
+      - name: Publish package to npmjs
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Get package info
+        id: package
+        run: |
+          echo "name=$(node -p \"require('./package.json').name\")" >> $GITHUB_OUTPUT
+          echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*
+            ${{ steps.package.outputs.name }}-${{ steps.package.outputs.version }}.tgz
+          generate_release_notes: true
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+
+
