@@ -1,6 +1,6 @@
 ## Resk-Caching — Secure caching and vector-friendly backend
 
-Resk-Caching is a Bun-based backend library/server for secure caching, embeddings orchestration, and vector DB access. It emphasizes security (no secrets in the frontend), performance, and observability.
+Resk-Caching is a Bun-based backend library/server for secure caching, embeddings orchestration, and vector DB access. It emphasizes security, performance, and observability.
 
 [![NPM version](https://img.shields.io/npm/v/resk-caching.svg)](https://www.npmjs.com/package/resk-caching)
 [![NPM License](https://img.shields.io/npm/l/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/blob/main/LICENSE)
@@ -120,17 +120,143 @@ const val = await cache.get("key");
 - Optional AES-GCM encryption at rest for persisted cache entries
 - Structured logs with correlation-id; metrics and traces for forensics
 
-See docs for details:
-- docs/USAGE.md
-- docs/SECURITY_MODEL.md
-
-## CI/CD
-GitHub Actions workflow in `.github/workflows/ci.yml` runs type check, lint, build, and tests with Bun on:
-- pushes to `main`/`master`
-- pull requests
-- version tags matching `v*`
-
 ## License
 Apache-2.0 — see LICENSE
+
+## Vector Database Integration
+
+### Overview
+Resk-Caching supports multiple vector database backends for similarity search and semantic caching. The system can ingest documents, compute embeddings, and store them in vector databases for efficient retrieval.
+
+### Supported Vector Databases
+- **Chroma**: Local or hosted ChromaDB instances
+- **Pinecone**: Managed vector database service
+- **Weaviate**: Open-source vector database
+- **Milvus**: High-performance vector database
+- **Custom adapters**: Extend for your specific needs
+
+### Environment Configuration
+```bash
+# Vector Database Type
+export VECTORDB_TYPE=pinecone  # or chroma, weaviate, milvus
+
+# Embedding Provider
+export EMBEDDING_PROVIDER=openai  # or huggingface, sentence-transformers
+export EMBEDDING_MODEL=text-embedding-ada-002  # OpenAI model name
+export OPENAI_API_KEY=your_openai_key_here
+
+# Pinecone Configuration
+export PINECONE_API_KEY=your_pinecone_key
+export PINECONE_INDEX_HOST=https://your-index.pinecone.io
+export PINECONE_INDEX_NAME=your-index-name
+
+# Chroma Configuration
+export CHROMA_HOST=localhost
+export CHROMA_PORT=8000
+export CHROMA_COLLECTION_NAME=documents
+
+# Weaviate Configuration
+export WEAVIATE_URL=http://localhost:8080
+export WEAVIATE_API_KEY=your_weaviate_key
+export WEAVIATE_CLASS_NAME=Document
+
+# Milvus Configuration
+export MILVUS_HOST=localhost
+export MILVUS_PORT=19530
+export MILVUS_COLLECTION_NAME=documents
+
+# Batch Processing
+export BATCH_SIZE=100  # Documents per batch for embeddings
+export UPSERT_BATCH=50  # Documents per batch for vector DB
+```
+
+### Ingestion Script
+Use the provided ingestion script to batch process documents:
+
+```bash
+# Run ingestion
+bun run scripts/ingest-example.ts
+```
+
+The script will:
+1. Read documents from your source
+2. Compute embeddings in batches
+3. Store vectors in the configured database
+4. Handle retries and error recovery
+
+### Example Ingestion Code
+```typescript
+import { createVectorDBAdapter } from 'resk-caching';
+import { createEmbeddingProvider } from 'resk-caching';
+
+async function ingestDocuments(documents: Document[]) {
+  const vectorDB = createVectorDBAdapter();
+  const embeddings = createEmbeddingProvider();
+  
+  // Process in batches
+  for (let i = 0; i < documents.length; i += BATCH_SIZE) {
+    const batch = documents.slice(i, i + BATCH_SIZE);
+    
+    // Compute embeddings
+    const vectors = await embeddings.embedBatch(
+      batch.map(doc => doc.content)
+    );
+    
+    // Prepare for storage
+    const vectorsWithMetadata = batch.map((doc, idx) => ({
+      id: doc.id,
+      vector: vectors[idx],
+      metadata: {
+        title: doc.title,
+        source: doc.source,
+        timestamp: doc.timestamp
+      }
+    }));
+    
+    // Store in vector database
+    await vectorDB.upsertBatch(vectorsWithMetadata);
+  }
+}
+```
+
+### Vector Search
+```typescript
+import { createVectorDBAdapter } from 'resk-caching';
+
+async function searchSimilar(query: string, k: number = 5) {
+  const vectorDB = createVectorDBAdapter();
+  const embeddings = createEmbeddingProvider();
+  
+  // Get query embedding
+  const queryVector = await embeddings.embed(query);
+  
+  // Search for similar vectors
+  const results = await vectorDB.search(queryVector, {
+    k,
+    threshold: 0.7,  // Similarity threshold
+    filters: {
+      source: 'knowledge_base',
+      timestamp: { $gte: '2024-01-01' }
+    }
+  });
+  
+  return results;
+}
+```
+
+### Performance Considerations
+- **Batch sizes**: Larger batches (100-500) for embeddings, smaller (50-100) for vector DB operations
+- **Parallel processing**: Use worker threads for CPU-intensive embedding computation
+- **Caching**: Cache frequently accessed embeddings and search results
+- **Indexing**: Ensure proper vector database indexes are created for your use case
+
+### Monitoring and Metrics
+The system provides metrics for:
+- Embedding computation latency and throughput
+- Vector database operation success rates
+- Search query performance
+- Cache hit rates for vector operations
+
+Access metrics at `/api/metrics` endpoint.
 
 

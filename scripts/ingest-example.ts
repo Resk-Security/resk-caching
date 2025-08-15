@@ -19,6 +19,10 @@
    bun run scripts/ingest-example.ts
 */
 
+declare const Bun: {
+  env: Record<string, string | undefined>;
+};
+
 type Doc = { id: string; text: string; meta?: Record<string, unknown> };
 
 const provider = (Bun.env.EMBEDDING_PROVIDER ?? "openai").toLowerCase();

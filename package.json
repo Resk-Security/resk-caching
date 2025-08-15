@@ -30,12 +30,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/REPO.git"
+    "url": "git+https://github.com/Resk-Security/resk-caching.git"
   },
   "bugs": {
-    "url": "https://github.com/OWNER/REPO/issues"
+    "url": "https://github.com/Resk-Security/resk-caching/issues"
   },
-  "homepage": "https://github.com/OWNER/REPO#readme",
+  "homepage": "https://github.com/Resk-Security/resk-caching#readme",
   "keywords": [
     "bun",
     "cache",
