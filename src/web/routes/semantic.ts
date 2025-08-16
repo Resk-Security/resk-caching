@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { CachedLLMEntry, VectorEmbedding, LLMResponse } from "../../cache/types";
+
+import type { CachedLLMEntry } from "../../cache/types";
 import { InMemoryVectorCache } from "../../cache/vector-memory";
 
 // Initialize vector cache

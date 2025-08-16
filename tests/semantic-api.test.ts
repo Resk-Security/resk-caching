@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { describe, it, expect } from "bun:test";
+
 import { semanticController } from "../src/web/routes/semantic";
 
 describe("Semantic API Integration Tests", () => {
@@ -103,9 +104,8 @@ describe("Semantic API Integration Tests", () => {
     it("should retrieve responses for a query", async () => {
       const request = new Request("http://localhost:3000/api/semantic/responses?query=test");
       
-      const response = await semanticController.getResponses(request);
-      const result = await response.json();
-
+            const response = await semanticController.getResponses(request);
+      
       // Should either find responses or return 404
       expect([200, 404]).toContain(response.status);
     });

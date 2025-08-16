@@ -1,5 +1,6 @@
-import type { VectorSearchBackend, CachedLLMEntry, SemanticSearchResult, VectorEmbedding } from "./types";
 import { selectVariant, type VariantSelectionInput } from "../variants/selector";
+
+import type { VectorSearchBackend, CachedLLMEntry, SemanticSearchResult, VectorEmbedding, LLMResponse } from "./types";
 
 export class InMemoryVectorCache implements VectorSearchBackend {
   private entries: Map<string, CachedLLMEntry> = new Map();
@@ -51,7 +52,7 @@ export class InMemoryVectorCache implements VectorSearchBackend {
     const results: Array<{
       entry: CachedLLMEntry;
       similarity_score: number;
-      selected_response: any;
+      selected_response: LLMResponse;
     }> = [];
 
     // Calculate cosine similarity with all stored embeddings
@@ -128,9 +129,9 @@ export class InMemoryVectorCache implements VectorSearchBackend {
     return dotProduct / (normA * normB);
   }
 
-  private async selectResponse(entry: CachedLLMEntry, query: string): Promise<any> {
+  private async selectResponse(entry: CachedLLMEntry, query: string): Promise<LLMResponse> {
     if (entry.responses.length === 1) {
-      return entry.responses[0];
+      return entry.responses[0]!;
     }
 
     // Use variant selection if multiple responses exist
@@ -142,6 +143,6 @@ export class InMemoryVectorCache implements VectorSearchBackend {
     };
 
     const result = await selectVariant(variantInput);
-    return result?.variant || entry.responses[0];
+    return (result?.variant as LLMResponse) || entry.responses[0]!;
   }
 }

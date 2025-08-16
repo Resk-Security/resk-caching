@@ -3,9 +3,9 @@ import { getLogger } from "../shared/logger";
 
 import { rateLimit } from "./rate-limit";
 import { cacheController } from "./routes/cache";
-import { semanticController } from "./routes/semantic";
 import { metricsHandler } from "./routes/metrics";
 import { openapiDocument } from "./routes/openapi";
+import { semanticController } from "./routes/semantic";
 import { authMiddleware } from "./security";
 
 const logger = getLogger();
