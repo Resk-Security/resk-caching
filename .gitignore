@@ -5,6 +5,9 @@ bun.lockb
 # build outputs
 dist/
 
+
+package-lock.json
+
 # env
 .env
 .env.local
