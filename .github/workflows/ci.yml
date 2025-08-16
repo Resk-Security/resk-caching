@@ -67,7 +67,7 @@ jobs:
           cache: 'npm'
 
       - name: Install npm dependencies
-        run: npm ci
+        run: npm install
 
       - name: Create package
         run: npm pack
@@ -75,8 +75,17 @@ jobs:
       - name: Verify package contents
         run: npm pack --dry-run
 
+      - name: List created files
+        run: ls -la *.tgz
+
       - name: Check package availability
         run: npm view resk-caching || echo "Package name available for first-time publication"
+
+      - name: Verify package contents
+        run: tar -tzf *.tgz | head -20
+
+      - name: Validate package.json
+        run: npx tsc --noEmit
 
       - name: Publish package to npmjs
         run: npm publish --access public

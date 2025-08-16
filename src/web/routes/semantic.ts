@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import type { CachedLLMEntry } from "../../cache/types";
 import { InMemoryVectorCache } from "../../cache/vector-memory";
+import { recordLLMResponseStored, recordSemanticSearch, recordSemanticSearchDuration, recordVectorSimilarityScore } from "../../metrics/metrics";
 
 // Initialize vector cache
 const vectorCache = new InMemoryVectorCache();
@@ -68,6 +69,12 @@ export const semanticController = {
 
       await vectorCache.storeLLMResponse(entry);
 
+      // Record metrics
+      recordLLMResponseStored({ 
+        responses_count: entry.responses.length, 
+        variant_strategy: entry.variant_strategy 
+      });
+
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -116,12 +123,29 @@ export const semanticController = {
 
       const { query, query_embedding, limit, similarity_threshold } = parsed.data;
       
+      const startTime = Date.now();
       const searchResult = await vectorCache.searchSimilar(
         query,
         query_embedding,
         limit,
         similarity_threshold
       );
+      const searchDuration = Date.now() - startTime;
+
+      // Record metrics
+      recordSemanticSearch({ 
+        query_type: "similarity_search", 
+        similarity_threshold: similarity_threshold || 0.7 
+      });
+      recordSemanticSearchDuration(searchDuration, { 
+        query_type: "similarity_search", 
+        matches_found: searchResult.matches.length 
+      });
+
+      // Record similarity scores for analysis
+      for (const match of searchResult.matches) {
+        recordVectorSimilarityScore(match.similarity_score, { query_type: "similarity_search" });
+      }
 
       // Update access stats for the matched entries
       for (const match of searchResult.matches) {

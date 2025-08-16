@@ -55,6 +55,14 @@ const httpRequestDuration = histogram("http_request_duration_ms", [5, 10, 25, 50
 const cacheHits = counter("cache_hits_total", "Cache hits");
 const cacheMisses = counter("cache_misses_total", "Cache misses");
 
+// New semantic search metrics
+const semanticSearches = counter("semantic_searches_total", "Total semantic similarity searches");
+const semanticSearchDuration = histogram("semantic_search_duration_ms", [1, 5, 10, 25, 50, 100, 200], "Semantic search duration in ms");
+const vectorSimilarityScores = histogram("vector_similarity_scores", [0.1, 0.3, 0.5, 0.7, 0.8, 0.9, 0.95, 0.99], "Vector similarity scores distribution");
+const llmResponsesStored = counter("llm_responses_stored_total", "Total LLM responses stored in vector cache");
+const responseSelections = counter("response_selections_total", "Total response selections using variant strategies");
+const cacheEntries = counter("cache_entries_total", "Total entries in vector cache");
+
 export function recordHttpRequest(labels: { method: string; route: string; status: number }): void {
   inc(httpRequests, labels);
 }
@@ -69,6 +77,33 @@ export function recordCacheHit(labels: { route: string }): void {
 
 export function recordCacheMiss(labels: { route: string }): void {
   inc(cacheMisses, labels);
+}
+
+// New semantic search metric functions
+export function recordSemanticSearch(labels: { query_type: string; similarity_threshold: number }): void {
+  inc(semanticSearches, labels);
+}
+
+export function recordSemanticSearchDuration(ms: number, labels: { query_type: string; matches_found: number }): void {
+  observe(semanticSearchDuration, ms, labels);
+}
+
+export function recordVectorSimilarityScore(score: number, labels: { query_type: string }): void {
+  observe(vectorSimilarityScores, score, labels);
+}
+
+export function recordLLMResponseStored(labels: { responses_count: number; variant_strategy?: string }): void {
+  inc(llmResponsesStored, labels);
+}
+
+export function recordResponseSelection(labels: { strategy: string; variants_count: number }): void {
+  inc(responseSelections, labels);
+}
+
+export function recordCacheEntryCount(count: number): void {
+  // Update the cache entries metric
+  const key = "total";
+  cacheEntries.values.set(key, count);
 }
 
 export function renderPrometheus(): string {
