@@ -3,6 +3,7 @@ import { getLogger } from "../shared/logger";
 
 import { rateLimit } from "./rate-limit";
 import { cacheController } from "./routes/cache";
+import { semanticController } from "./routes/semantic";
 import { metricsHandler } from "./routes/metrics";
 import { openapiDocument } from "./routes/openapi";
 import { authMiddleware } from "./security";
@@ -41,6 +42,11 @@ export const router = {
       if (path === "/api/cache" && method === "POST") res = await withCorrelation(correlationId, () => cacheController.put(req));
       else if (path === "/api/cache" && method === "DELETE") res = await withCorrelation(correlationId, () => cacheController.clear());
       else if (path === "/api/cache/query" && method === "POST") res = await withCorrelation(correlationId, () => cacheController.query(req));
+      // Semantic search endpoints
+      else if (path === "/api/semantic/store" && method === "POST") res = await withCorrelation(correlationId, () => semanticController.storeLLMResponse(req));
+      else if (path === "/api/semantic/search" && method === "POST") res = await withCorrelation(correlationId, () => semanticController.searchSimilar(req));
+      else if (path === "/api/semantic/responses" && method === "GET") res = await withCorrelation(correlationId, () => semanticController.getResponses(req));
+      else if (path === "/api/semantic/stats" && method === "GET") res = await withCorrelation(correlationId, () => semanticController.getStats());
       else res = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: { "content-type": "application/json", "x-correlation-id": correlationId } });
 
       const ended = performance.now();

@@ -1,6 +1,24 @@
-## Resk-Caching — Secure caching and vector-friendly backend
+## Resk-Caching — LLM Response Caching with Vector Database Integration
 
-Resk-Caching is a Bun-based backend library/server for secure caching, embeddings orchestration, and vector DB access. It emphasizes security, performance, and observability.
+Resk-Caching is a Bun-based backend library/server designed to **cache Large Language Model (LLM) responses using vector databases**, significantly reducing API costs while maintaining response quality and relevance.
+
+### 🎯 **Primary Purpose: Cost Optimization for LLM APIs**
+
+This library addresses the high costs associated with LLM API calls by implementing intelligent caching strategies. Instead of making expensive API calls to services like OpenAI, Claude, or other LLMs, Resk-Caching stores pre-computed responses in a vector database and retrieves them based on semantic similarity to incoming queries.
+
+### 🔍 **How It Works**
+
+1. **Pre-populated Response Database**: You maintain a database of high-quality LLM responses to common queries, stored as vector embeddings
+2. **Semantic Matching**: When a new query arrives, the system finds the most semantically similar cached response
+3. **Cost Savings**: Returns cached responses instead of making new API calls
+4. **Response Selection**: Advanced algorithms allow you to choose specific responses based on business logic, user preferences, or A/B testing strategies
+
+### 🚀 **Key Benefits**
+
+- **Massive Cost Reduction**: Save LLM API costs
+- **Consistent Quality**: Ensure high-quality, pre-approved responses
+- **Customizable Selection**: Choose responses based on deterministic algorithms, weights, or business rules
+- **Scalable Architecture**: Built for high-throughput production environments
 
 [![NPM version](https://img.shields.io/npm/v/resk-caching.svg)](https://www.npmjs.com/package/resk-caching)
 [![NPM License](https://img.shields.io/npm/l/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/blob/main/LICENSE)
@@ -12,20 +30,42 @@ Resk-Caching is a Bun-based backend library/server for secure caching, embedding
 [![LLM Security](https://img.shields.io/badge/LLM-Security-red)](https://github.com/Resk-Security/resk-caching)
 
 ### Features
-- Cache backends: in-memory, SQLite (local persistence), Redis (multi-instance)
-- AES-GCM encryption for cache-at-rest (optional via env key)
-- JWT-protected API with rate limiting
-- OpenAPI 3.1 generated from Zod (single source of truth)
-- Prometheus metrics and OpenTelemetry tracing
-- WebSockets for real-time event fan-out; optional Redis pub/sub complement
+- **LLM Response Caching**: Store and retrieve LLM responses using vector similarity matching
+- **Multiple Cache Backends**: in-memory, SQLite (local persistence), Redis (multi-instance)
+- **Advanced Response Selection**: Deterministic, weighted, and randomized response selection algorithms
+- **Vector Database Integration**: Optimized for semantic search and similarity matching
+- **AES-GCM Encryption**: Secure cache-at-rest protection (optional via env key)
+- **JWT-Protected API**: Secure access with rate limiting and abuse prevention
+- **OpenAPI 3.1**: Auto-generated API documentation from Zod schemas
+- **Performance Monitoring**: Prometheus metrics and OpenTelemetry tracing
+- **Real-time Updates**: WebSockets for instant response distribution
 
 ### What each module is for
-- Caching backends: pick low-latency memory, local persistence (SQLite), or distributed (Redis)
-- AES-GCM encryption: protects cached payloads at rest with authenticated encryption
-- JWT + rate-limiting: API protection and abuse prevention
-- Zod + OpenAPI: runtime validation and always-in-sync API contracts and examples
-- Prometheus + OpenTelemetry: real-time insight into performance, reliability, and request flows
-- WebSockets + Redis pub/sub: instant fan-out to clients and multi-instance event distribution
+- **LLM Response Storage**: Store pre-computed LLM responses with their vector embeddings for fast retrieval
+- **Caching Backends**: Choose between low-latency memory, local persistence (SQLite), or distributed (Redis) based on your scale
+- **Response Selection Algorithms**: Implement deterministic, weighted, or randomized response selection based on business logic
+- **Vector Similarity Matching**: Find the most semantically similar cached response to incoming queries
+- **AES-GCM Encryption**: Protect sensitive LLM responses at rest with authenticated encryption
+- **JWT + Rate Limiting**: Secure API access and prevent abuse while maintaining performance
+- **Zod + OpenAPI**: Ensure data validation and provide always-in-sync API documentation
+- **Performance Monitoring**: Track cache hit rates, response times, and cost savings in real-time
+- **Real-time Distribution**: Instantly distribute responses across multiple instances and clients
+
+## Prerequisites
+
+### Vector Database Setup
+Before using Resk-Caching, you need to have a **vector database** ready with pre-computed LLM responses. This is the foundation of the caching system:
+
+1. **Response Database**: Create a collection of high-quality LLM responses to common queries
+2. **Vector Embeddings**: Generate vector embeddings for each response using your preferred embedding model
+3. **Metadata Storage**: Store additional context like response quality scores, categories, or business rules
+4. **Similarity Index**: Ensure your vector database has proper indexing for fast similarity search
+
+**Recommended Vector Databases:**
+- **Pinecone**: Excellent for production use with high performance
+- **Weaviate**: Open-source with great similarity search capabilities
+- **Qdrant**: Fast and efficient for real-time applications
+- **Chroma**: Simple local development and testing
 
 ## Install
 ```bash
@@ -46,16 +86,51 @@ export PORT=3000
 # run
 npm run build && bun run dev
 
-# API
+# Store LLM responses with vector embeddings
 curl -H "Authorization: Bearer test" \
      -H "Content-Type: application/json" \
-     -d '{"query":"Hello","response":{"answer":"Hi"},"ttl":3600}' \
-     http://localhost:3000/api/cache
+     -d '{
+       "query": "thank you",
+       "query_embedding": {
+         "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+         "dimension": 5
+       },
+       "responses": [
+         {
+           "id": "thank_1",
+           "text": "You'\''re welcome! I'\''m glad I could help.",
+           "metadata": {"tone": "friendly", "formality": "casual"},
+           "quality_score": 0.9,
+           "category": "gratitude"
+         },
+         {
+           "id": "thank_2",
+           "text": "My pleasure! Feel free to ask if you need anything else.",
+           "metadata": {"tone": "professional", "formality": "formal"},
+           "quality_score": 0.85,
+           "category": "gratitude"
+         }
+       ],
+       "variant_strategy": "weighted",
+       "weights": [3, 2],
+       "seed": "user:123",
+       "ttl": 86400
+     }' \
+     http://localhost:3000/api/semantic/store
 
+# Search for semantically similar queries
 curl -H "Authorization: Bearer test" \
      -H "Content-Type: application/json" \
-     -d '{"query":"Hello"}' \
-     http://localhost:3000/api/cache/query
+     -d '{
+       "query": "merci pour ta réponse",
+       "query_embedding": {
+         "vector": [0.12, 0.18, 0.28, 0.42, 0.48],
+         "dimension": 5
+       },
+       "limit": 3,
+       "similarity_threshold": 0.6
+     }' \
+     http://localhost:3000/api/semantic/search
 ```
 
 ## Environment variables
@@ -69,32 +144,82 @@ curl -H "Authorization: Bearer test" \
 - OTEL_EXPORTER_OTLP_ENDPOINT (traces), OTEL_SERVICE_NAME
 
 ## Endpoints
+
+### Core Cache Endpoints
 - GET /health
-- POST /api/cache (JWT)
-- POST /api/cache/query (JWT)
-- DELETE /api/cache (JWT)
+- POST /api/cache (JWT) - Store simple key-value pairs
+- POST /api/cache/query (JWT) - Retrieve cached values
+- DELETE /api/cache (JWT) - Clear all cache
 - GET /api/openapi.json (OpenAPI 3.1 from Zod)
 - GET /api/metrics (Prometheus exposition)
 
-## Variants (A/B, randomized responses)
-You can cache an object with variants and an optional selection strategy, for example:
+### Semantic Search Endpoints (NEW!)
+- POST /api/semantic/store (JWT) - Store LLM responses with vector embeddings
+- POST /api/semantic/search (JWT) - Search for similar queries using semantic similarity
+- GET /api/semantic/responses (JWT) - Get all responses for a specific query
+- GET /api/semantic/stats (JWT) - Get cache statistics and performance metrics
+
+## Semantic Search & Response Selection
+
+### How It Works
+
+1. **Store Responses**: First, store your pre-computed LLM responses with their vector embeddings
+2. **User Query**: When a user sends a message (e.g., "merci", "merci pour ta réponse")
+3. **Vector Search**: The system finds semantically similar queries in your database
+4. **Response Selection**: Uses advanced algorithms to choose the most appropriate response
+5. **Return Result**: Sends back a varied, contextually relevant response
+
+### Example: Thank You Responses
+
+Store multiple responses for "thank you" queries:
+
 ```json
 {
-  "variants": [
-    { "text": "You're welcome" },
-    { "text": "My pleasure" },
-    { "text": "No problem" }
+  "query": "thank you",
+  "query_embedding": {
+    "vector": [0.1, 0.2, 0.3, 0.4, 0.5],
+    "dimension": 5
+  },
+  "responses": [
+    {
+      "id": "thank_1",
+      "text": "You're welcome! I'm glad I could help.",
+      "metadata": {"tone": "friendly", "formality": "casual"},
+      "quality_score": 0.9,
+      "category": "gratitude"
+    },
+    {
+      "id": "thank_2",
+      "text": "My pleasure! Feel free to ask if you need anything else.",
+      "metadata": {"tone": "professional", "formality": "formal"},
+      "quality_score": 0.85,
+      "category": "gratitude"
+    }
   ],
-  "variantStrategy": "deterministic",
-  "weights": [3, 1, 1],
-  "seed": "userId:conversationId"
+  "variant_strategy": "weighted",
+  "weights": [3, 2],
+  "seed": "user:123"
 }
 ```
-Server-side selection strategies:
-- random: uniform random
-- round-robin: cycles; uses Redis INCR if available
-- deterministic: stable by seed (user/conversation)
-- weighted: weighted random according to weights
+
+### Response Selection Strategies
+
+- **random**: Uniform random selection for variety
+- **round-robin**: Cycles through responses systematically
+- **deterministic**: Stable selection based on seed (user ID, conversation ID)
+- **weighted**: Probability-based selection according to quality scores or preferences
+
+### Search for Similar Queries
+
+When a user sends "merci pour ta réponse", the system:
+
+1. Converts the message to a vector embedding
+2. Finds similar queries in the database (e.g., "thank you", "thanks", "merci")
+3. Selects the best match based on similarity score
+4. Applies the variant strategy to choose a response
+5. Returns the selected response with metadata
+
+This approach ensures users get varied, contextually appropriate responses while maintaining the high quality of pre-approved LLM outputs.
 
 ## Library usage (TypeScript)
 ```ts
