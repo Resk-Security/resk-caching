@@ -8,6 +8,7 @@ on:
       - 'mkdocs.yml'
       - 'docs/**'
       - '.github/workflows/docs.yml'
+      - '.readthedocs.yaml'
   workflow_dispatch:
 
 permissions:
