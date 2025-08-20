@@ -1,0 +1,36 @@
+site_name: Resk-Caching
+site_description: LLM response caching with vector integration, security, and observability
+site_url: https://resk-security.github.io/resk-caching/
+repo_url: https://github.com/Resk-Security/resk-caching
+repo_name: Resk-Security/resk-caching
+
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - content.code.copy
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - codehilite
+
+nav:
+  - Overview: index.md
+  - Getting Started: USAGE.md
+  - Backends: backends.md
+  - Ingestion: ingestion.md
+  - API: api.md
+  - Security Model: SECURITY_MODEL.md
+  - Deployment: deployment.md
+  - Comparison: comparison.md
+  - Next Steps: next-steps.md

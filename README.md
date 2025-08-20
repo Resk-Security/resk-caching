@@ -40,6 +40,16 @@ This library addresses the high costs associated with LLM API calls by implement
 - **Performance Monitoring**: Prometheus metrics and OpenTelemetry tracing
 - **Real-time Updates**: WebSockets for instant response distribution
 
+### How we're different from other semantic caches
+
+- **GPTCache**: Great Python-first cache. Resk-Caching focuses on Bun/TypeScript, ships with JWT-secured HTTP API, OpenAPI generation, built-in Prometheus/OTEL, and optional authenticated-at-rest encryption out of the box.
+- **ModelCache**: Provides a semantic cache layer. Resk-Caching adds production concerns (rate-limit, security wrapper, metrics, tracing, OpenAPI, WebSockets) and pluggable backends with zero-code switching via `CACHE_BACKEND`.
+- **Upstash Semantic Cache**: Managed vector-backed cache. Resk-Caching is open-source, self-hosted by default, and can run fully local with SQLite or purely in-memory while retaining encryption and observability.
+- **Redis LangCache**: Managed Redis-based semantic cache. Resk-Caching supports Redis natively via Bun's RESP3 client while also offering SQLite and in-memory modes for portability and offline development.
+- **SemantiCache (FAISS)**: FAISS-native library. Resk-Caching prioritizes a secure, observable HTTP surface with variant selection strategies and can integrate external vector DBs; no GPU dependency required.
+
+If you need a secure, auditable cache service with operational tooling for teams, Resk-Caching is purpose-built for that surface.
+
 ### What each module is for
 - **LLM Response Storage**: Store pre-computed LLM responses with their vector embeddings for fast retrieval
 - **Caching Backends**: Choose between low-latency memory, local persistence (SQLite), or distributed (Redis) based on your scale
@@ -89,6 +99,84 @@ bun run dev
 
 # The server will be available at http://localhost:3000
 ```
+
+### Step-by-step setup
+
+1. Choose your key-value cache backend:
+   - `CACHE_BACKEND=memory` for local/dev
+   - `CACHE_BACKEND=sqlite` for single-node durability
+   - `CACHE_BACKEND=redis` for distributed/multi-instance
+2. Choose your vector search strategy for semantic features:
+   - Default: in-memory vector store (process-local)
+   - Production: external vector DB (Pinecone/Qdrant/Weaviate/Chroma)
+   - Alternative: Redis RediSearch vectors or SQLite vector extensions
+3. Ingest responses and embeddings (see Ingestion or `scripts/ingest-example.ts`).
+4. Call `/api/semantic/store` and `/api/semantic/search`.
+
+By default, semantic embeddings live in memory. To power vector search with Redis or SQLite, see the guides below.
+
+### Vector search with Redis (RediSearch)
+
+Use Redis Stack with RediSearch for vector similarity.
+
+Example index and KNN search (1536-dim float32 cosine):
+```bash
+# Create index
+redis-cli FT.CREATE idx:llm ON HASH PREFIX 1 llm: SCHEMA \
+  query TEXT \
+  embedding VECTOR HNSW 6 TYPE FLOAT32 DIM 1536 DISTANCE_METRIC COSINE \
+  category TAG SORTABLE \
+  metadata TEXT
+
+# Insert (embedding must be raw float32 bytes)
+redis-cli HSET llm:thank-you query "thank you" category "gratitude" \
+  embedding "$BINARY_FLOAT32" metadata "{\"tone\":\"friendly\"}"
+
+# KNN search
+redis-cli FT.SEARCH idx:llm "*=>[KNN 5 @embedding $vec AS score]" \
+  PARAMS 2 vec "$QUERY_EMBED_FLOAT32" \
+  SORTBY score DIALECT 2 RETURN 3 query category score
+```
+
+Notes:
+- Convert `number[]` → `Float32Array` → bytes for `embedding` field.
+- Keep response variants in a secondary key (e.g., `llm:<id>:responses`) and run variant selection after KNN.
+
+### Vector search with SQLite (sqlite-vss/sqlite-vec)
+
+Ship SQLite with a vector extension, then create a VSS table and join with metadata:
+
+```sql
+CREATE VIRTUAL TABLE vss_entries USING vss0(
+  id TEXT PRIMARY KEY,
+  embedding(1536)
+);
+
+CREATE TABLE llm_entries (
+  id TEXT PRIMARY KEY,
+  query TEXT NOT NULL,
+  category TEXT,
+  metadata TEXT
+);
+```
+
+Insert and search:
+```sql
+-- insert: embedding blob is Float32 (vss_f32)
+INSERT INTO vss_entries(id, embedding) VALUES (?, vss_f32(?));
+INSERT INTO llm_entries(id, query, category, metadata) VALUES(?, ?, ?, ?);
+
+-- KNN
+SELECT e.id, l.query, vss_distance(e.embedding, vss_f32(?)) AS score
+FROM vss_entries e
+JOIN llm_entries l ON l.id = e.id
+ORDER BY score ASC
+LIMIT 5;
+```
+
+Notes:
+- Convert `number[]` to Float32 blob for inserts and query embedding.
+- Join back to your stored responses via `id` or `query`, then apply variant selection.
 
 ### Basic Usage Examples
 
@@ -343,6 +431,25 @@ Access metrics at `/api/metrics` endpoint (Prometheus format).
 - RATE_LIMIT_MAX (default 1000)
 - OTEL_EXPORTER_OTLP_ENDPOINT (traces), OTEL_SERVICE_NAME
 
+### Cache backends explained
+
+- **In-memory** (`CACHE_BACKEND=memory`):
+  - Fastest single-process store (Map-based), ideal for development and ephemeral caches
+  - Per-key TTL stored alongside values; expired entries are lazily evicted on access
+  - No cross-process sharing and no durability
+
+- **SQLite** (`CACHE_BACKEND=sqlite`):
+  - Local durability using Bun's SQLite; table `kv(key TEXT PRIMARY KEY, value TEXT, expiresAt INTEGER)`
+  - Upsert semantics on `set`, TTL computed client-side and stored in `expiresAt`
+  - Expired rows are pruned lazily on `get`; `clear()` wipes the table
+  - File path defaults to `resk-cache.sqlite`
+
+- **Redis** (`CACHE_BACKEND=redis`, `REDIS_URL=...`):
+  - Distributed, multi-instance cache using Bun's native RESP3 client
+  - Values are JSON-serialized with optional TTL via `EXPIRE`
+  - Prefix isolation via `rc:`; `clear()` scans and deletes only `rc:*` keys
+  - Helpers for experiments (round-robin counters, sets/lists for variants, optional pub/sub)
+
 ## Endpoints
 
 ### Core Cache Endpoints
@@ -585,3 +692,17 @@ The system provides metrics for:
 Access metrics at `/api/metrics` endpoint.
 
 
+## Next steps
+
+- Docker image and multi-stage build for slim runtimes
+- LangChain integration helper (middleware to consult cache before LLM calls)
+- LlamaIndex and Vercel AI SDK adapters
+- Pluggable vector stores (Qdrant, Weaviate, Pinecone) with adapters
+- Background refresh policies and stale-while-revalidate
+- Eviction strategies (LRU/LFU) and cache warming CLI
+- Upstash Redis & Redis Cloud deployment templates
+- Benchmarks and load-test recipes (k6/Artillery)
+
+## Full documentation
+
+We provide a full documentation site (MkDocs). See `docs/` and the published site via GitHub Pages.
