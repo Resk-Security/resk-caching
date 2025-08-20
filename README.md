@@ -705,4 +705,4 @@ Access metrics at `/api/metrics` endpoint.
 
 ## Full documentation
 
-We provide a full documentation site (MkDocs). See `docs/` and the published site via GitHub Pages.
+We provide a full documentation site (MkDocs). See `docs/` and the published site: [Resk-Caching Docs](https://resk-caching.readthedocs.io/en/latest/).
