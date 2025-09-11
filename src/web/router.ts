@@ -8,6 +8,11 @@ import { openapiDocument } from "./routes/openapi";
 import { semanticController } from "./routes/semantic";
 import { authMiddleware } from "./security";
 
+// Import new route handlers
+import * as costRoutes from "./routes/cost";
+import * as performanceRoutes from "./routes/performance";
+import * as testingRoutes from "./routes/testing";
+
 const logger = getLogger();
 
 export const router = {
@@ -47,6 +52,33 @@ export const router = {
       else if (path === "/api/semantic/search" && method === "POST") res = await withCorrelation(correlationId, () => semanticController.searchSimilar(req));
       else if (path === "/api/semantic/responses" && method === "GET") res = await withCorrelation(correlationId, () => semanticController.getResponses(req));
       else if (path === "/api/semantic/stats" && method === "GET") res = await withCorrelation(correlationId, () => semanticController.getStats());
+      // Cost tracking endpoints
+      else if (path === "/api/cost/record" && method === "POST") res = await withCorrelation(correlationId, () => costRoutes.recordCost(req));
+      else if (path === "/api/cost/analysis" && method === "GET") res = await withCorrelation(correlationId, () => costRoutes.getCostAnalysis(req));
+      else if (path === "/api/cost/breakdown" && method === "GET") res = await withCorrelation(correlationId, () => costRoutes.getCostBreakdown(req));
+      else if (path === "/api/cost/recent" && method === "GET") res = await withCorrelation(correlationId, () => costRoutes.getRecentCosts(req));
+      else if (path === "/api/cost/pricing" && method === "POST") res = await withCorrelation(correlationId, () => costRoutes.addPricing(req));
+      else if (path === "/api/cost/pricing" && method === "GET") res = await withCorrelation(correlationId, () => costRoutes.getPricing(req));
+      // Performance optimization endpoints
+      else if (path === "/api/performance/record" && method === "POST") res = await withCorrelation(correlationId, () => performanceRoutes.recordMetric(req));
+      else if (path === "/api/performance/benchmarks" && method === "GET") res = await withCorrelation(correlationId, () => performanceRoutes.getBenchmarks(req));
+      else if (path === "/api/performance/slow-queries" && method === "GET") res = await withCorrelation(correlationId, () => performanceRoutes.getSlowQueries(req));
+      else if (path === "/api/performance/recommendations" && method === "GET") res = await withCorrelation(correlationId, () => performanceRoutes.getOptimizationRecommendations(req));
+      else if (path === "/api/performance/warming/start" && method === "POST") res = await withCorrelation(correlationId, () => performanceRoutes.startCacheWarming(req));
+      else if (path === "/api/performance/warming/progress" && method === "GET") res = await withCorrelation(correlationId, () => performanceRoutes.getWarmingProgress(req));
+      else if (path === "/api/performance/metrics" && method === "GET") res = await withCorrelation(correlationId, () => performanceRoutes.getRecentMetrics(req));
+      // Testing and mock endpoints
+      else if (path === "/api/testing/chat/completions" && method === "POST") res = await withCorrelation(correlationId, () => testingRoutes.createChatCompletion(req));
+      else if (path === "/api/testing/mock/responses" && method === "POST") res = await withCorrelation(correlationId, () => testingRoutes.addMockResponse(req));
+      else if (path === "/api/testing/mock/responses" && method === "GET") res = await withCorrelation(correlationId, () => testingRoutes.getMockResponses(req));
+      else if (path === "/api/testing/scenarios" && method === "POST") res = await withCorrelation(correlationId, () => testingRoutes.addTestScenario(req));
+      else if (path === "/api/testing/scenarios" && method === "GET") res = await withCorrelation(correlationId, () => testingRoutes.getTestScenarios(req));
+      else if (path === "/api/testing/scenarios/run" && method === "POST") res = await withCorrelation(correlationId, () => testingRoutes.runTestScenario(req));
+      else if (path === "/api/testing/scenarios/run-all" && method === "POST") res = await withCorrelation(correlationId, () => testingRoutes.runAllTestScenarios(req));
+      else if (path === "/api/testing/history" && method === "GET") res = await withCorrelation(correlationId, () => testingRoutes.getRequestHistory(req));
+      else if (path === "/api/testing/scenarios/defaults" && method === "POST") res = await withCorrelation(correlationId, () => testingRoutes.loadDefaultTestScenarios(req));
+      else if (path === "/api/testing/health" && method === "GET") res = await withCorrelation(correlationId, () => testingRoutes.getHealthStatus(req));
+      else if (path === "/api/testing/circuit-breakers" && method === "GET") res = await withCorrelation(correlationId, () => testingRoutes.getCircuitBreakerStats(req));
       else res = new Response(JSON.stringify({ error: "Not Found" }), { status: 404, headers: { "content-type": "application/json", "x-correlation-id": correlationId } });
 
       const ended = performance.now();
