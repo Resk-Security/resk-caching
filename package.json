@@ -21,7 +21,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts --max-warnings=0",
     "format": "prettier --write .",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build",
+    "example:demo": "bun run examples/comprehensive-demo.ts",
+    "example:cost-tracking": "bun run examples/cost-tracking-example.ts",
+    "example:performance": "bun run examples/performance-optimization-example.ts",
+    "example:development": "bun run examples/development-testing-example.ts"
   },
   "files": [
     "dist",
