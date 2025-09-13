@@ -1,6 +1,10 @@
 import { getLogger } from "./logger";
 
-const pino = getLogger();
+let pinoInstance: ReturnType<typeof getLogger> | null = null;
+const pino = () => {
+  if (!pinoInstance) pinoInstance = getLogger();
+  return pinoInstance;
+};
 
 /**
  * Simple logger wrapper that accepts different formats
@@ -8,30 +12,30 @@ const pino = getLogger();
 export const logger = {
   info: (message: string, context?: any) => {
     if (context) {
-      pino.info(context, message);
+      pino().info(context, message);
     } else {
-      pino.info(message);
+      pino().info(message);
     }
   },
   error: (message: string, error?: any) => {
     if (error) {
-      pino.error({ err: error }, message);
+      pino().error({ err: error }, message);
     } else {
-      pino.error(message);
+      pino().error(message);
     }
   },
   warn: (message: string, context?: any) => {
     if (context) {
-      pino.warn(context, message);
+      pino().warn(context, message);
     } else {
-      pino.warn(message);
+      pino().warn(message);
     }
   },
   debug: (message: string, context?: any) => {
     if (context) {
-      pino.debug(context, message);
+      pino().debug(context, message);
     } else {
-      pino.debug(message);
+      pino().debug(message);
     }
   }
 };
