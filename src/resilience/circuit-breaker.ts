@@ -96,7 +96,7 @@ export class CircuitBreaker {
         logger.info(`Circuit breaker ${this.name} moved to half-open state`);
       } else {
         const error = new Error(`Circuit breaker ${this.name} is open`);
-        await this.handleFailover(error, execContext);
+        // Fail fast when circuit is open: do not perform retries or delays
         throw error;
       }
     }

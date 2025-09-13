@@ -94,10 +94,10 @@ describe("CircuitBreaker", () => {
     await expect(breaker.execute(slowOperation)).rejects.toThrow("timed out");
   });
 
-  test("should reset statistics", () => {
+  test("should reset statistics", async () => {
     const failOperation = () => Promise.reject(new Error("test"));
     
-    breaker.execute(failOperation).catch(() => {}); // Ignore rejection
+    await breaker.execute(failOperation).catch(() => {}); // Ensure failure recorded
     
     let stats = breaker.getStats();
     expect(stats.failures).toBeGreaterThan(0);

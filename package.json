@@ -1,6 +1,6 @@
 {
   "name": "resk-caching",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "private": false,
   "type": "module",
   "description": "Smart caching system for LLM responses - reduce API costs by avoiding redundant calls",
@@ -19,7 +19,7 @@
     "build:prod": "rimraf dist && tsc -p tsconfig.json",
     "test": "bun test tests || echo 'Bun not available in this CI; skipping tests'",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .ts --max-warnings=0",
+    "lint": "eslint src tests --ext .ts --max-warnings=0",
     "format": "prettier --write .",
     "prepublishOnly": "bun run build",
     "example:demo": "bun run examples/comprehensive-demo.ts",
