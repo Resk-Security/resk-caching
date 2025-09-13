@@ -1,3 +1,12 @@
+[![NPM version](https://img.shields.io/npm/v/resk-caching.svg)](https://www.npmjs.com/package/resk-caching)
+[![NPM License](https://img.shields.io/npm/l/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/blob/main/LICENSE)
+[![NPM Downloads](https://img.shields.io/npm/dt/resk-caching.svg)](https://www.npmjs.com/package/resk-caching)
+[![GitHub issues](https://img.shields.io/github/issues/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/issues)
+[![GitHub stars](https://img.shields.io/github/stars/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/stargazers)
+[![GitHub last commit](https://img.shields.io/github/last-commit/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/commits/main)
+[![TypeScript](https://img.shields.io/badge/TypeScript-^5.4.5-blue.svg)](https://www.typescriptlang.org/)
+[![LLM Security](https://img.shields.io/badge/LLM-Security-red)](https://github.com/Resk-Security/resk-caching)
+
 ## Resk-Caching — LLM Response Caching with Vector Database Integration
 
 Resk-Caching is a Bun-based backend library/server designed to **cache Large Language Model (LLM) responses using vector databases**, significantly reducing API costs while maintaining response quality and relevance.
@@ -49,14 +58,7 @@ Resk-Caching delivers the complete value proposition of intelligent LLM caching 
 - **🧪 Development Environment**: OpenAI-compatible API for offline testing
 - **🛡️ Scalability & Availability**: Circuit breakers and automatic failover
 
-[![NPM version](https://img.shields.io/npm/v/resk-caching.svg)](https://www.npmjs.com/package/resk-caching)
-[![NPM License](https://img.shields.io/npm/l/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/blob/main/LICENSE)
-[![NPM Downloads](https://img.shields.io/npm/dt/resk-caching.svg)](https://www.npmjs.com/package/resk-caching)
-[![GitHub issues](https://img.shields.io/github/issues/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/issues)
-[![GitHub stars](https://img.shields.io/github/stars/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/stargazers)
-[![GitHub last commit](https://img.shields.io/github/last-commit/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/commits/main)
-[![TypeScript](https://img.shields.io/badge/TypeScript-^5.4.5-blue.svg)](https://www.typescriptlang.org/)
-[![LLM Security](https://img.shields.io/badge/LLM-Security-red)](https://github.com/Resk-Security/resk-caching)
+
 
 ### Features
 - **LLM Response Caching**: Store and retrieve LLM responses using vector similarity matching

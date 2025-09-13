@@ -12,6 +12,7 @@ import {
   MockResponse,
   TestScenario 
 } from "../src/mock/mock-llm-provider";
+import { globalLLMProvider } from "../src/providers/factory";
 
 import { 
   CircuitBreakerManager,
@@ -22,6 +23,7 @@ async function runDevelopmentTestingExample() {
   console.log("🧪 Development and Testing Environment Example");
   console.log("===============================================");
 
+  const useReal = !!(Bun.env.api_key_llm || Bun.env.OPENAI_API_KEY || Bun.env.DEEPSEEK_API_KEY);
   const mockProvider = new MockLLMProvider();
 
   console.log("\n🎭 Step 1: OpenAI-Compatible Mock API");
@@ -46,7 +48,9 @@ async function runDevelopmentTestingExample() {
   for (let i = 0; i < basicRequests.length; i++) {
     const request = basicRequests[i];
     try {
-      const response = await mockProvider.createChatCompletion(request);
+      const response = useReal && globalLLMProvider
+        ? await globalLLMProvider.createChatCompletion(request)
+        : await mockProvider.createChatCompletion(request);
       console.log(`   ${i + 1}. ${request.model}:`);
       console.log(`     Request: "${request.messages[0].content}"`);
       console.log(`     Response: "${response.choices[0].message.content}"`);

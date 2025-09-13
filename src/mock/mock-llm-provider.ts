@@ -113,10 +113,7 @@ export class MockLLMProvider {
     cached: boolean;
   }> = [];
 
-  constructor() {
-    this.loadDefaultResponses();
-    logger.info('MockLLMProvider initialized with default responses');
-  }
+  constructor() {}
 
   /**
    * Process chat completion request (OpenAI compatible)
@@ -188,7 +185,6 @@ export class MockLLMProvider {
    * Find mock response matching the request
    */
   private findMatchingResponse(request: ChatCompletionRequest): MockResponse | null {
-    // Ensure most recently added custom responses take precedence over defaults
     const responses = [...this.mockResponses].reverse();
     for (const mockResponse of responses) {
       const trigger = mockResponse.trigger;
@@ -209,22 +205,7 @@ export class MockLLMProvider {
       return mockResponse;
     }
 
-    // Provide a deterministic fallback for unknown inputs to avoid hard failures in tests
-    return {
-      id: 'fallback',
-      trigger: { messagePattern: '', exact: false },
-      response: {
-        content: 'This is a fallback mock response',
-        tokens: { prompt: 5, completion: 10 },
-        latencyMs: 10,
-        errorRate: 0
-      },
-      metadata: {
-        scenario: 'fallback',
-        description: 'Default fallback response when no mock matches',
-        tags: ['fallback']
-      }
-    };
+    return null;
   }
 
   /**
