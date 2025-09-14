@@ -7,6 +7,12 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-^5.4.5-blue.svg)](https://www.typescriptlang.org/)
 [![LLM Security](https://img.shields.io/badge/LLM-Security-red)](https://github.com/Resk-Security/resk-caching)
 
+
+## Full documentation
+
+We provide a full documentation site (MkDocs). See `docs/` and the published site: [Resk-Caching Docs](https://resk-caching.readthedocs.io/en/latest/).
+
+
 ## Resk-Caching — LLM Response Caching with Vector Database Integration
 
 Resk-Caching is a Bun-based backend library/server designed to **cache Large Language Model (LLM) responses using vector databases**, significantly reducing API costs while maintaining response quality and relevance.
@@ -869,7 +875,3 @@ Access metrics at `/api/metrics` endpoint.
 - Eviction strategies (LRU/LFU) and cache warming CLI
 - Upstash Redis & Redis Cloud deployment templates
 - Benchmarks and load-test recipes (k6/Artillery)
-
-## Full documentation
-
-We provide a full documentation site (MkDocs). See `docs/` and the published site: [Resk-Caching Docs](https://resk-caching.readthedocs.io/en/latest/).
