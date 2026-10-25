@@ -6,6 +6,7 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/Resk-Security/resk-caching.svg)](https://github.com/Resk-Security/resk-caching/commits/main)
 [![TypeScript](https://img.shields.io/badge/TypeScript-^5.4.5-blue.svg)](https://www.typescriptlang.org/)
 [![LLM Security](https://img.shields.io/badge/LLM-Security-red)](https://github.com/Resk-Security/resk-caching)
+[![Documentation](https://img.shields.io/badge/docs-resk.fr%2Fdocs%2Fresk--caching-orange)](https://resk.fr/docs/resk-caching/)
 
 
 ## Full documentation
